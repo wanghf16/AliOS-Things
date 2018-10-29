@@ -20,10 +20,24 @@
 
 
 #if 1
-#define PRODUCT_KEY             "b1iuHMGJYGI"
-#define PRODUCT_SECRET          "Na027DnOTFtkLfEz"
-#define DEVICE_NAME             "oooooooooooooooooooooooooooooooo"
-#define DEVICE_SECRET           "ri2CWiX0HYlBGQXaF4LjWozf6YAsebOE"
+#define PRODUCT_KEY             "b1SuP2nfEWk"
+#define PRODUCT_SECRET          "gW7OnDekfR77DdvN"
+#if 0
+#define DEVICE_NAME             "Chip_WM-W600_01"
+#define DEVICE_SECRET           "OuFRmGp9qujdHKwjUb3p7mY1ZO2B5tGX"
+#elif 0
+#define DEVICE_NAME             "Chip_WM-W600_02"
+#define DEVICE_SECRET           "06Ofy8so0kXOrwd7xsKUmuwyhLVzlVDW"
+#elif 0
+#define DEVICE_NAME             "Chip_WM-W600_03"
+#define DEVICE_SECRET           "NC1RD5mOjYwUL4hAooosQn0J35gjaMNO"
+#elif 0
+#define DEVICE_NAME             "Chip_WM-W600_04"
+#define DEVICE_SECRET           "GOomRxoN467OJl4sTzuVL8pxDGzyHQbZ"
+#else
+#define DEVICE_NAME             "Chip_WM-W600_05"
+#define DEVICE_SECRET           "x1lS9opzEhHzKJzugLkcFpuB8y2YAAyL"
+#endif
 #elif 0
 #define PRODUCT_KEY             "b1iuHMGJYGI"
 #define PRODUCT_SECRET          "Na027DnOTFtkLfEz"
