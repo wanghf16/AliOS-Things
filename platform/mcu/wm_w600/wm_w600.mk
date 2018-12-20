@@ -49,6 +49,7 @@ $(NAME)_CFLAGS  += -Wno-unused-value -Wno-strict-aliasing
 $(NAME)_SOURCES := aos/aos.c aos/soc_impl.c  aos/trace_impl.c aos/wm_osal_alios.c
 $(NAME)_SOURCES += hal/uart.c
 $(NAME)_SOURCES	+= hal/wifi_port.c hal/flash.c hal/ota_port.c
+$(NAME)_SOURCES += src/startup.s src/main.c
 
 $(NAME)_PREBUILT_LIBRARY := libs/libWifi.a
 $(NAME)_PREBUILT_LIBRARY += libs/libCommon.a
