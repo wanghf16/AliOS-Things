@@ -10,7 +10,6 @@
 
 #include "c_types.h"
 #include "ets_sys.h"
-#include "hal/ota.h"
 
 #include "espos_scheduler.h"
 
@@ -42,7 +41,7 @@ extern int _text_start;
 static kinit_t kinit = {
     .argc = 0,
     .argv = NULL,
-    .cli_enable = 0
+    .cli_enable = 1
 };
 
 static void app_entry(void *arg)
@@ -51,7 +50,6 @@ static void app_entry(void *arg)
 }
 
 extern uart_dev_t uart_0;
-extern struct hal_ota_module_s esp8266_ota_module;
 
 extern hal_wifi_module_t aos_wifi_esp8266;
 void user_init(void)
@@ -64,13 +62,12 @@ void user_init(void)
     hal_uart_init(&uart_0);
 
     hal_wifi_register_module(&aos_wifi_esp8266);
-    hal_ota_register_module(&esp8266_ota_module);
     ret = hal_wifi_init();
     if (ret){
         printf("waring: wifi init fail ret is %d \r\n", ret);
     }
-#ifdef SUPPORT_SINGAPORE_DOMAIN
-    aos_task_new("main", app_entry, 0, 7.5*1024);
+#ifdef ESP8266_CHIPSET
+    aos_task_new("main", app_entry, 0, 2*1024);
 #else
     aos_task_new("main", app_entry, 0, 6*1024);
 #endif

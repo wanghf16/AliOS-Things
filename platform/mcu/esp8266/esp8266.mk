@@ -17,6 +17,8 @@ GLOBAL_INCLUDES  += $(ESP_INC_PATH)/lwip $(ESP_INC_PATH)/lwip/ipv4 $(ESP_INC_PAT
 # $(NAME)_INCLUDES := $(ESP_INC_PATH)/driver
 GLOBAL_INCLUDES  += $(ESP_INC_PATH)/driver
 
+GLOBAL_INCLUDES  += common hal/rec
+
 GLOBAL_CFLAGS    += -u call_user_start \
 				    -fno-inline-functions \
 					-ffunction-sections \
@@ -34,9 +36,12 @@ GLOBAL_LDFLAGS   += -nostdlib \
 				    -Wl,-static \
 				    -u call_user_start \
 					-Wl,-EL \
-					-mlongcalls \
-
+					-mlongcalls
+ifeq ($(SUPPORT_ESP8285),yes)
+GLOBAL_LDS_FILES += platform/mcu/esp8266/bsp/ld/eagle.app.v6.new_8285.1024.app1.ld
+else
 GLOBAL_LDS_FILES += platform/mcu/esp8266/bsp/ld/eagle.app.v6.new.1024.app1.ld
+endif
 GLOBAL_LDFLAGS   += -Lplatform/mcu/esp8266/bsp/ld
 
 GLOBAL_DEFINES   += CONFIG_AOS_KV_BUFFER_SIZE=8192 CONFIG_ESP_LWIP COAP_WITH_YLOOP
@@ -52,8 +57,11 @@ $(NAME)_PREBUILT_LIBRARY += bsp/lib/libpp.a
 $(NAME)_PREBUILT_LIBRARY += bsp/lib/libwpa.a
 $(NAME)_PREBUILT_LIBRARY += bsp/lib/libphy.a
 $(NAME)_PREBUILT_LIBRARY += bsp/lib/libgcc.a
+ifeq ($(loopback), 1)
+$(NAME)_PREBUILT_LIBRARY += bsp/lib/liblwip_loopback.a
+else
 $(NAME)_PREBUILT_LIBRARY += bsp/lib/liblwip.a
-
+endif
 GLOBAL_CFLAGS    += -DXT_USE_THREAD_SAFE_CLIB=0
 $(NAME)_SOURCES  := bsp/entry.c
 $(NAME)_SOURCES  += bsp/heap_iram.c
@@ -67,8 +75,8 @@ $(NAME)_SOURCES  += hal/uart.c
 $(NAME)_SOURCES  += hal/flash.c
 $(NAME)_SOURCES  += hal/misc.c
 $(NAME)_SOURCES  += hal/wifi_port.c
-$(NAME)_SOURCES  += hal/ota_port.c
 $(NAME)_SOURCES  += hal/upgrade_lib.c
+$(NAME)_SOURCES  += hal/rec/rec_wdt.c
 $(NAME)_SOURCES  += bsp/driver/gpio.c
 $(NAME)_SOURCES  += bsp/driver/hw_timer.c
 $(NAME)_SOURCES  += bsp/driver/i2c_master.c

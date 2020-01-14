@@ -48,7 +48,7 @@
 
 
 #define TCPIP_THREAD_NAME               "tcp/ip"
-#define TCPIP_THREAD_STACKSIZE          3072
+#define TCPIP_THREAD_STACKSIZE          2048
 #define TCPIP_THREAD_PRIO               14
 
 #define DEFAULT_THREAD_STACKSIZE        200
@@ -57,7 +57,6 @@
 #define LWIP_NOASSERT			1
 
 #define LWIP_DEBUG                      0
-#define SOCKETS_DEBUG                   0
 #define LWIP_DEBUG_TRACE                0
 /**
  * MEM_ALIGNMENT: should be set to the alignment of the CPU
@@ -222,7 +221,6 @@
 
 #define LWIP_TCPIP_CORE_LOCKING         0
 
-#define MEMP_NUM_NETCONN                8
 
 #endif /* __LWIPOPTS_H__ */
 

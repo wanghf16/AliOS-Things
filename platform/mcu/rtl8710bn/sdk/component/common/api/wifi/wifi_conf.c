@@ -73,6 +73,8 @@ uint32_t rtw_join_status;
 extern unsigned char dhcp_mode_sta;
 #endif
 
+unsigned char enable_softap_adjust_phy = 0;
+
 /******************************************************
  *               Variables Definitions
  ******************************************************/
@@ -608,10 +610,16 @@ error:
 		rtw_free_sema( &join_result->join_sema);
 	}
 	join_user_data = NULL;
-	rtw_free((u8*)join_result);
+	if (join_result != NULL) {
+		rtw_free((u8*)join_result);
+		join_result = NULL;
+	}
 	wifi_unreg_event_handler(WIFI_EVENT_CONNECT, wifi_connected_hdl);
+	printf("RTW API: WIFI_EVENT_CONNECT unreg finish\r\n");
 	wifi_unreg_event_handler(WIFI_EVENT_NO_NETWORK,wifi_no_network_hdl);
+	printf("RTW API: WIFI_EVENT_NO_NETWORK unreg finish\r\n");
 	wifi_unreg_event_handler(WIFI_EVENT_FOURWAY_HANDSHAKE_DONE, wifi_handshake_done_hdl);
+	printf("RTW API: WIFI_EVENT_FOURWAY_HANDSHAKE_DONE unreg finish\r\n");
 	rtw_join_status &= ~JOIN_CONNECTING;
 	return result;
 }
@@ -1880,6 +1888,7 @@ static void wifi_autoreconnect_thread(void *param)
 
     
 	DBG_8195A("\n\rauto reconnect ...\n");
+	DBG_8195A("\n\r  ssid: %s ...\n", reconnect_param->ssid);
 	ret = wifi_connect(reconnect_param->ssid, reconnect_param->security_type, reconnect_param->password,
 	                   reconnect_param->ssid_len, reconnect_param->password_len, reconnect_param->key_id, NULL);
 #if CONFIG_LWIP_LAYER
@@ -1920,7 +1929,7 @@ static void wifi_autoreconnect_thread(void *param)
 		}
 	}else
 	{
-        	DBG_8195A("\n\rauto reconnect failed...\n");
+        	DBG_8195A("\n\rauto reconnect failed, ret %d\n", ret);
         }
 #endif //#if CONFIG_LWIP_LAYER
 	aos_task_exit(0);
@@ -2104,5 +2113,6 @@ int wifi_get_antenna_info(unsigned char *antenna)
 	return ret;
 }
 #endif
+
 //----------------------------------------------------------------------------//
 #endif	//#if CONFIG_WLAN

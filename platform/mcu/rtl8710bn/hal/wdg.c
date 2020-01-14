@@ -17,7 +17,7 @@ static bool is_enable_handler = FALSE;
 void watchdog_irq_handler(uint32_t callback_id) 
 {	
 	printf("watchdog_irq_handler, callback_id: %d\n", callback_id);
-//	sys_reset( ) ;	
+	sys_reset( ) ;	
 }
 void watchdog_irq_set(void)
 {
@@ -31,7 +31,7 @@ void watchdog_irq_set(void)
 
 int32_t hal_wdg_init(wdg_dev_t *wdg)
 {
-	uint32_t msecs = wdg->config.timeout;
+	uint32_t msecs = wdg->config.timeout/2;
 	printf("hal_wdg_init, set timeout:%d ms\n", msecs);
 	watchdog_init(msecs);
 	watchdog_irq_set();

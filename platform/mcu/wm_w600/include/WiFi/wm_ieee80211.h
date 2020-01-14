@@ -9,6 +9,7 @@
  */
 #ifndef WM_IEEE80211_H
 #define WM_IEEE80211_H
+#include "wm_wifi.h"
 
 /*
  * DS bit usage
@@ -89,6 +90,8 @@
 #define IEEE80211_STYPE_QOS_CFPOLL		0x00E0
 #define IEEE80211_STYPE_QOS_CFACKPOLL		0x00F0
 
+#define IEEE80211_STA_DEFAULT_LISTEN_INTERVAL 3
+#define IEEE80211_STA_MIN_LISTEN_INTERVAL     1
 
 /* miscellaneous IEEE 802.11 constants */
 #define IEEE80211_MAX_FRAG_THRESHOLD	    2352
@@ -1999,6 +2002,80 @@ static __inline bool ieee80211_check_tim(struct ieee80211_tim_ie *tim,
     return !!(tim->virtual_map[index] & mask);
 }
 
+static __inline u32 ieee80211_hdrlen(u16 fc)
+{
+	u32 hdrlen = 24;
+
+	if (ieee80211_is_data(fc)) {
+		if (ieee80211_has_a4(fc))
+			hdrlen = 30;
+		if (ieee80211_is_data_qos(fc))
+			hdrlen += IEEE80211_QOS_CTL_LEN;
+		if (ieee80211_has_order(fc))
+			hdrlen += IEEE80211_HT_CTL_LEN;
+		goto out;
+	}
+
+	if (ieee80211_is_ctl(fc)) {
+		/*
+		 * ACK and CTS are 10 bytes, all others 16. To see how
+		 * to get this condition consider
+		 *	 subtype mask:	 0b0000000011110000 (0x00F0)
+		 *	 ACK subtype:	 0b0000000011010000 (0x00D0)
+		 *	 CTS subtype:	 0b0000000011000000 (0x00C0)
+		 *	 bits that matter:		   ^^^		(0x00E0)
+		 *	 value of those: 0b0000000011000000 (0x00C0)
+		 */
+		if ((fc & host_to_le16(0x00E0)) == host_to_le16(0x00C0))
+			hdrlen = 10;
+		else
+			hdrlen = 16;
+	}
+out:
+	return hdrlen;
+}
+
+static __inline u8 *ieee80211_get_bssid(struct ieee80211_hdr *hdr, u32 len,
+			u32 mode)
+{
+	u16 fc = hdr->frame_control;
+
+	/* drop ACK/CTS frames and incorrect hdr len (ctrl) */
+	if (len < 16)
+		return NULL;
+
+	if (ieee80211_is_data(fc)) {
+		if (len < 24) /* drop incorrect hdr len (data) */
+			return NULL;
+
+		if (ieee80211_has_a4(fc))
+			return NULL;
+		if (ieee80211_has_tods(fc))
+			return hdr->addr1;
+		if (ieee80211_has_fromds(fc))
+			return hdr->addr2;
+
+		return hdr->addr3;
+	}
+
+	if (ieee80211_is_mgmt(fc)) {
+		if (len < 24) /* drop incorrect hdr len (mgmt) */
+			return NULL;
+		return hdr->addr3;
+	}
+
+	if (ieee80211_is_ctl(fc)) {
+		if (ieee80211_is_pspoll(fc))
+			return hdr->addr1;
+
+		if (ieee80211_is_back_req(fc)) {
+			if (mode & IEEE80211_MODE_INFRA)
+					return hdr->addr2;
+		}
+	}
+
+	return NULL;
+}
 /**
  * @}
  */

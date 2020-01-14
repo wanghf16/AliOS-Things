@@ -284,8 +284,10 @@ int rda_ccfg_boot(void)
     if(!abort_flag) {
         rda_ccfg_pdi2c();
     }
-    //rda_ccfg_ck();
+    rda_ccfg_ck();
 #endif /* RDA5991H_HW_VER */
+    /*close usb polling*/
+    RDA_GPIO->CTRL &= ~(0x01UL << 12);
     /* Set flash clock */
     rda_ccfg_spifck();
     /* Set aon timer clock source */

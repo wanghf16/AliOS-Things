@@ -15,7 +15,7 @@
 
 #define MCU_CLOCK_HZ        (80000000)
 
-#define AOS_START_STACK 	1536
+#define AOS_START_STACK 	1408
 #define AOS_MM_STACK	1024
 
 #ifdef CONFIG_AOS_CLI

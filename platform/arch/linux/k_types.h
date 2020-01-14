@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 #include <signal.h>
+#include "k_compiler.h"
+
 
 /* Be very careful here, you can modyfy the following code, if only you understand what yor are doing! */
 

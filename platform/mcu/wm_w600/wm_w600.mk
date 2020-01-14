@@ -11,7 +11,10 @@ $(NAME)_COMPONENTS += platform/arch/arm/armv7m
 # $(NAME)_COMPONENTS += libc rhino hal netmgr framework.common mbedtls cjson cli digest_algorithm protocols.net
 $(NAME)_COMPONENTS += rhino libc hal protocols.net netmgr framework.common
 
-GLOBAL_DEFINES += CONFIG_AOS_KV_PTN=7
+GLOBAL_DEFINES += CONFIG_AOS_KV_MULTIPTN_MODE
+GLOBAL_DEFINES += CONFIG_AOS_KV_PTN=5
+GLOBAL_DEFINES += CONFIG_AOS_KV_SECOND_PTN=6
+GLOBAL_DEFINES += CONFIG_AOS_KV_PTN_SIZE=4096
 GLOBAL_DEFINES += CONFIG_AOS_KV_BUFFER_SIZE=8192
 GLOBAL_DEFINES += GCC_COMPILE=1
 
@@ -46,10 +49,11 @@ $(NAME)_CFLAGS  += -Wno-return-type -Wno-unused-function -Wno-unused-but-set-var
 $(NAME)_CFLAGS  += -Wno-unused-value -Wno-strict-aliasing
 
 
-$(NAME)_SOURCES := aos/aos.c aos/soc_impl.c  aos/trace_impl.c aos/wm_osal_alios.c
+$(NAME)_SOURCES := aos/aos.c aos/soc_impl.c  aos/trace_impl.c aos/wm_osal_alios.c aos/heap_dram.c
 $(NAME)_SOURCES += hal/uart.c
 $(NAME)_SOURCES	+= hal/wifi_port.c hal/flash.c hal/ota_port.c
 $(NAME)_SOURCES += src/startup.s src/main.c
+
 
 $(NAME)_PREBUILT_LIBRARY := libs/libWifi.a
 $(NAME)_PREBUILT_LIBRARY += libs/libCommon.a

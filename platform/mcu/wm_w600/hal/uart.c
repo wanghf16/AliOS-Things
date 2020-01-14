@@ -27,7 +27,7 @@ uart_dev_t uart_0 = {
 };
 
 uart_dev_t uart_1 = {
-   .port = 0,    /* uart port */
+   .port = 1,    /* uart port */
    .config = {115200, TLS_UART_CHSIZE_8BIT, TLS_UART_PMODE_DISABLED, TLS_UART_ONE_STOPBITS, FLOW_CONTROL_DISABLED},  /* uart config */
    .priv = NULL    /* priv data */
 };

@@ -10,7 +10,6 @@ $(NAME)_COMPONENTS += protocols.net
 $(NAME)_COMPONENTS += platform/mcu/bk7231/hal_init
 $(NAME)_COMPONENTS += platform/mcu/bk7231/aos/framework_runtime
 $(NAME)_COMPONENTS += platform/mcu/bk7231/aos/app_runtime
-$(NAME)_COMPONENTS += prov
 
 GLOBAL_DEFINES += CONFIG_AOS_KV_MULTIPTN_MODE
 GLOBAL_DEFINES += CONFIG_AOS_KV_PTN=6
@@ -70,7 +69,6 @@ $(NAME)_SOURCES	 += hal/gpio.c \
                     hal/StringUtils.c \
 					hal/wifi_port.c \
 					hal/beken_rhino.c \
-                    port/ota_port.c
 
 #ifneq (,$(filter protocols.mesh,$(COMPONENTS)))
 $(NAME)_SOURCES +=  hal/mesh_wifi_hal.c

@@ -2,8 +2,8 @@
  * Copyright (C) 2015-2017 Alibaba Group Holding Limited
  */
 
-#ifndef CONFIG_H
-#define CONFIG_H
+#ifndef K_CONFIG_H
+#define K_CONFIG_H
 
 /* chip level conf */
 #ifndef RHINO_CONFIG_LITTLE_ENDIAN
@@ -49,7 +49,7 @@
 #define RHINO_CONFIG_GCC_RETADDR             1
 #endif
 #ifndef RHINO_CONFIG_MM_LEAKCHECK
-#define RHINO_CONFIG_MM_LEAKCHECK            1
+#define RHINO_CONFIG_MM_LEAKCHECK            0
 #endif
 #ifndef RHINO_CONFIG_RINGBUF_VENDOR
 #define RHINO_CONFIG_RINGBUF_VENDOR          0
@@ -213,5 +213,20 @@
 #define RHINO_CONFIG_TRACE                   0
 #endif
 
-#endif /* CONFIG_H */
+#ifndef WIFI_CONFIG_SUPPORT_LOWPOWER
+#define WIFI_CONFIG_SUPPORT_LOWPOWER         0
+#endif
 
+#ifndef WIFI_CONFIG_LISTENSET_BINIT
+#define WIFI_CONFIG_LISTENSET_BINIT          1
+#endif
+
+#ifndef WIFI_CONFIG_LISTEN_INTERVAL
+#define WIFI_CONFIG_LISTEN_INTERVAL          1
+#endif
+
+#ifndef WIFI_CONFIG_RECEIVE_DTIM
+#define WIFI_CONFIG_RECEIVE_DTIM             1
+#endif
+
+#endif /* CONFIG_H */

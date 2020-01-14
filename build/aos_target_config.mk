@@ -65,6 +65,7 @@ $(if $(TEMP_MAKEFILE),,\
 $(if $(filter 1,$(words $(TEMP_MAKEFILE))),,$(error More than one component with the name "$(COMP)". See $(TEMP_MAKEFILE)))
 
 $(eval TEMP_MAKEFILE := $(subst ././,./,$(TEMP_MAKEFILE)))
+
 $(eval include $(TEMP_MAKEFILE))
 $(eval deps :=)
 $(eval deps_src := $($(NAME)_COMPONENTS))
@@ -83,6 +84,14 @@ $(foreach dep, $(deps_cube),\
 $(if $(findstring $(TEMP_MAKEFILE),$(ALL_MAKEFILES)),,\
 	$(eval ALL_MAKEFILES += $(TEMP_MAKEFILE)) \
 	$(eval COMPONENTS += $(deps)) \
+	$(eval REAL_COMPONENTS_LOCS += $(COMP)) \
+	$(eval iotx_check_RET:=0)\
+	$(eval COMP_sub:=$(subst linkkit/sdk, linkkit_sdk ,$(COMP))) \
+	$(eval COMP_sub:=$(subst linkkit.sdk, linkkit_sdk ,$(COMP_sub))) \
+	$(if $(filter linkkit_sdk, $(COMP_sub)), \
+    	$(eval iotx_check_RET=$(shell sh build/checkout_iotx_sdk.sh)),) \
+	$(if $(filter fail!, $(iotx_check_RET)), \
+    	$(error iotx-sdk-c checkout fail!),) \
 	$(call PREPROCESS_TEST_COMPONENT, $(COMPONENTS), $(TEST_COMPONENTS)) \
 	DEPENDENCY += '$(NAME)': '$($(NAME)_COMPONENTS)',)
 
@@ -127,6 +136,8 @@ $(eval OLD_CURDIR := $(CURDIR))
 $(eval CURDIR := $(CURDIR)$(dir $(TEMP_MAKEFILE)))
 $(eval TEST_COMPONENTS :=)
 
+$(eval AOS_IMG1_XIP1_LD_FILE :=)
+$(eval AOS_IMG2_XIP2_LD_FILE :=)
 # Cache the last valid RTOS/NS combination for iterative filtering.
 $(eval TEMP_VALID_OSNS_COMBOS := $(VALID_OSNS_COMBOS))
 
@@ -178,8 +189,9 @@ AOS_SDK_CHIP_SPECIFIC_SCRIPT += $(CHIP_SPECIFIC_SCRIPT)
 AOS_SDK_CONVERTER_OUTPUT_FILE += $(CONVERTER_OUTPUT_FILE)
 AOS_SDK_FINAL_OUTPUT_FILE += $(BIN_OUTPUT_FILE)
 
+AOS_SDK_IMG1_XIP1_LD_FILE +=$(AOS_IMG1_XIP1_LD_FILE)
+AOS_SDK_IMG2_XIP2_LD_FILE +=$(AOS_IMG2_XIP2_LD_FILE)
 $(eval PROCESSED_COMPONENTS += $(NAME))
-
 $(eval $(NAME)_SOURCES := $(sort $($(NAME)_SOURCES)) )
 
 endef
@@ -189,7 +201,8 @@ endef
 # Macro PROCESS_COMPONENT
 # $(1) is the list of components left to process. $(COMP) is set as the first element in the list
 define PROCESS_COMPONENT
-$(foreach TMP_COMP, $(COMPONENTS),$(call PROCESS_ONE_COMPONENT, $(TMP_COMP)))
+AOS_SDK_DEFINES += MCU_FAMILY=\"$(PLATFORM_MCU_BOARD)\"
+$(foreach TMP_COMP, $(REAL_COMPONENTS_LOCS),$(call PROCESS_ONE_COMPONENT, $(TMP_COMP)))
 endef
 
 ##################################
@@ -309,9 +322,10 @@ endif
 CURDIR :=
 $(info processing components: $(COMPONENTS))
 $(eval $(call FIND_COMPONENT, $(COMPONENTS)))
+#$(error stop Intentionally !)
 # remove repeat component
 $(eval COMPONENTS := $(sort $(COMPONENTS)) )
-$(eval $(call PROCESS_COMPONENT, $(COMPONENTS)))
+$(eval $(call PROCESS_COMPONENT, $(PROCESSED_COMPONENTS_LOCS)))
 
 PLATFORM    :=$(notdir $(PLATFORM_FULL))
 
@@ -381,11 +395,11 @@ else ifeq (, $(BINS))
 AOS_SDK_PREBUILT_LIBRARIES +=$(foreach comp,$(PROCESSED_COMPONENTS), $(addprefix $($(comp)_LOCATION),$($(comp)_PREBUILT_LIBRARY)))
 endif
 
-AOS_SDK_LINK_FILES         +=$(foreach comp,$(PROCESSED_COMPONENTS), $(addprefix $$(OUTPUT_DIR)/Modules/$(call GET_BARE_LOCATION,$(comp)),$($(comp)_LINK_FILES)))
+AOS_SDK_LINK_FILES         +=$(foreach comp,$(PROCESSED_COMPONENTS), $(addprefix $$(OUTPUT_DIR)/modules/$(call GET_BARE_LOCATION,$(comp)),$($(comp)_LINK_FILES)))
 AOS_SDK_UNIT_TEST_SOURCES  +=$(foreach comp,$(PROCESSED_COMPONENTS), $(addprefix $($(comp)_LOCATION),$($(comp)_UNIT_TEST_SOURCES)))
 
 ifeq ($(ADD_UNIT_TESTS_TO_LINK_FILES),1)
-AOS_SDK_LINK_FILES         += $(patsubst %.cpp,%.o,$(patsubst %.cc,%.o,$(patsubst %.c,%.o, $(foreach comp,$(PROCESSED_COMPONENTS), $(addprefix $$(OUTPUT_DIR)/Modules/$(call GET_BARE_LOCATION,$(comp)),$($(comp)_UNIT_TEST_SOURCES))) )))
+AOS_SDK_LINK_FILES         += $(patsubst %.cpp,%.o,$(patsubst %.cc,%.o,$(patsubst %.c,%.o, $(foreach comp,$(PROCESSED_COMPONENTS), $(addprefix $$(OUTPUT_DIR)/modules/$(call GET_BARE_LOCATION,$(comp)),$($(comp)_UNIT_TEST_SOURCES))) )))
 endif
 
 
@@ -399,6 +413,8 @@ $(CONFIG_FILE): $(AOS_SDK_MAKEFILES) | $(CONFIG_FILE_DIR)
 	$(QUIET)$(call WRITE_FILE_APPEND, $(CONFIG_FILE) ,AOS_SDK_LDFLAGS             		+= $(strip $(AOS_SDK_LDFLAGS)))
 	$(QUIET)$(call WRITE_FILE_APPEND, $(CONFIG_FILE) ,AOS_SDK_LDS_FILES                     += $(strip $(AOS_SDK_LDS_FILES)))
 	$(QUIET)$(call WRITE_FILE_APPEND, $(CONFIG_FILE) ,AOS_SDK_LDS_INCLUDES                  += $(strip $(AOS_SDK_LDS_INCLUDES)))
+	$(QUIET)$(call WRITE_FILE_APPEND, $(CONFIG_FILE) ,AOS_SDK_IMG1_XIP1_LD_FILE                 += $(strip $(AOS_SDK_IMG1_XIP1_LD_FILE)))
+	$(QUIET)$(call WRITE_FILE_APPEND, $(CONFIG_FILE) ,AOS_SDK_IMG2_XIP2_LD_FILE                 += $(strip $(AOS_SDK_IMG2_XIP2_LD_FILE)))
 	$(QUIET)$(call WRITE_FILE_APPEND, $(CONFIG_FILE) ,RESOURCE_CFLAGS					+= $(strip $(AOS_SDK_CFLAGS)))
 	$(QUIET)$(call WRITE_FILE_APPEND, $(CONFIG_FILE) ,AOS_SDK_LINK_SCRIPT         		+= $(strip $(if $(strip $(AOS_SDK_LINK_SCRIPT)),$(AOS_SDK_LINK_SCRIPT),$(AOS_SDK_DEFAULT_LINK_SCRIPT))))
 	$(QUIET)$(call WRITE_FILE_APPEND, $(CONFIG_FILE) ,AOS_SDK_LINK_SCRIPT_CMD    	 	+= $(call COMPILER_SPECIFIC_LINK_SCRIPT,$(strip $(if $(strip $(AOS_SDK_LINK_SCRIPT)),$(AOS_SDK_LINK_SCRIPT),$(AOS_SDK_DEFAULT_LINK_SCRIPT)))))
@@ -433,6 +449,9 @@ $(CONFIG_FILE): $(AOS_SDK_MAKEFILES) | $(CONFIG_FILE_DIR)
 	$(QUIET)$(foreach comp,$(PROCESSED_COMPONENTS), $(call WRITE_FILE_APPEND, $(CONFIG_FILE) ,$(comp)_PRE_BUILD_TARGETS:= $($(comp)_PRE_BUILD_TARGETS)))
 	$(QUIET)$(foreach comp,$(PROCESSED_COMPONENTS), $(call WRITE_FILE_APPEND, $(CONFIG_FILE) ,$(comp)_PREBUILT_LIBRARY := $(addprefix $($(comp)_LOCATION),$($(comp)_PREBUILT_LIBRARY))))
 	$(QUIET)$(foreach comp,$(PROCESSED_COMPONENTS), $(call WRITE_FILE_APPEND, $(CONFIG_FILE) ,$(comp)_TYPE             := $($(comp)_TYPE)))
+	$(QUIET)$(foreach comp,$(PROCESSED_COMPONENTS), $(call WRITE_FILE_APPEND, $(CONFIG_FILE) ,$(comp)_SELF_BUIlD_COMP_targets  := $($(comp)_SELF_BUIlD_COMP_targets)))
+	$(QUIET)$(foreach comp,$(PROCESSED_COMPONENTS), $(call WRITE_FILE_APPEND, $(CONFIG_FILE) ,$(comp)_SELF_BUIlD_COMP_scripts  := $($(comp)_SELF_BUIlD_COMP_scripts)))
+	
 	$(QUIET)$(call WRITE_FILE_APPEND, $(CONFIG_FILE) ,AOS_SDK_UNIT_TEST_SOURCES   		:= $(AOS_SDK_UNIT_TEST_SOURCES))
 	$(QUIET)$(call WRITE_FILE_APPEND, $(CONFIG_FILE) ,ALL_RESOURCES             		:= $(call unique,$(ALL_RESOURCES)))
 	$(QUIET)$(call WRITE_FILE_APPEND, $(CONFIG_FILE) ,INTERNAL_MEMORY_RESOURCES 		:= $(call unique,$(INTERNAL_MEMORY_RESOURCES)))

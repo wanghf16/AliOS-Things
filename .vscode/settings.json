@@ -1,7 +1,7 @@
 {
     "aliosStudio.inner.yosBin": "aos",
-    "aliosStudio.hardware.board": "mk3060",
-    "aliosStudio.name": "alinkapp",
+    "aliosStudio.hardware.board": "wm_w600",
+    "aliosStudio.name": "linkkitapp",
     "aliosStudio.buildList": [
         {"name": "clean"},
         {"name": "helloworld@starterkit"},
@@ -11,5 +11,9 @@
     "aliosStudio.build.multiBin": false,
     "aliosStudio.build.multiBinTarget": "app",
     "aliosStudio.flashAllBin": false,
-    "aliosStudio.isAosSource": true
+    "aliosStudio.isAosSource": true,
+    "files.associations": {
+        "wifi.h": "c",
+        "hal.h": "c"
+    }
 }

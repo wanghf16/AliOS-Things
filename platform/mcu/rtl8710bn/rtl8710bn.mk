@@ -18,7 +18,7 @@ $(NAME)_TYPE := kernel
 $(NAME)_COMPONENTS += platform/arch/arm/armv7m
 #$(NAME)_COMPONENTS += libc rhino hal netmgr framework.common mbedtls cjson cli digest_algorithm
 $(NAME)_COMPONENTS += libc rhino hal netmgr framework.common cli digest_algorithm protocols.net
-$(NAME)_COMPONENTS += alicrypto
+#$(NAME)_COMPONENTS += alicrypto
 #$(NAME)_COMPONENTS += protocols.mesh
 
 
@@ -103,29 +103,21 @@ $(NAME)_INCLUDES += sdk/component/common/mbed/targets/cmsis/rtl8711b
 $(NAME)_INCLUDES += sdk/component/common/mbed/targets/hal/rtl8711b
 
 
-#GLOBAL_CFLAGS += -mcpu=cortex-m4 \
-                 -march=armv7-m \
-                 -mthumb -mthumb-interwork \
-                 -mlittle-endian \
-                 -mfpu=fpv4-sp-d16 \
-                 -mfloat-abi=hard \
-                 -DCONFIG_PLATFORM_8711B \
-                 -DM3\
-                 -fno-short-enums
-
 GLOBAL_CFLAGS += -mcpu=cortex-m4 \
                  -march=armv7-m \
                  -mthumb -mthumb-interwork \
                  -mlittle-endian \
                  -DCONFIG_PLATFORM_8711B \
                  -DM3\
-                 -fno-short-enums                 
+				 -DHardFault_Handler=Ali_HardFault_Handler
+
+GLOBAL_ASMFLAGS += -DHardFault_Handler=Ali_HardFault_Handler
 
 GLOBAL_CFLAGS += -w
 
 GLOBAL_LDFLAGS += -L $(SOURCE_ROOT)/platform/mcu/rtl8710bn
 #GLOBAL_LDFLAGS += -I $(SOURCE_ROOT)/platform/mcu/rtl8710bn
-# GLOBAL_LDFLAGS += -T $(SOURCE_ROOT)/platform/mcu/rtl8710bn/script/rlx8711B-symbol-v02-img2_xip1.ld                 
+# GLOBAL_LDFLAGS += -T $(SOURCE_ROOT)/platform/mcu/rtl8710bn/script/rlx8711B-symbol-v02-img2_xip1.ld
 #GLOBAL_LDFLAGS += $(SOURCE_ROOT)/platform/mcu/rtl8710bn/bin/boot_all.o
 GLOBAL_LDFLAGS += -L$(SOURCE_ROOT)/platform/mcu/rtl8710bn/lib/ -l_platform -l_wlan -l_wps -l_p2p -l_rtlstd
 
@@ -148,7 +140,7 @@ GLOBAL_LDFLAGS += -mcpu=cortex-m4        \
                   -Wl,--no-wchar-size-warning \
                   -Wl,--gc-sections \
                   -Wl,--cref \
-                  $(CLIB_LDFLAGS_NANO_FLOAT)                 
+                  $(CLIB_LDFLAGS_NANO_FLOAT)
 
 $(NAME)_CFLAGS  += -Wall -Werror -Wno-unused-variable -Wno-unused-parameter -Wno-implicit-function-declaration
 $(NAME)_CFLAGS  += -Wno-type-limits -Wno-sign-compare -Wno-pointer-sign -Wno-uninitialized
@@ -177,19 +169,27 @@ $(NAME)_SOURCES := aos/soc_impl.c          \
                    hal/flash.c  \
                    hal/hw.c  \
                    hal/wifi_port.c \
-                   hal/ota_port.c \
                    hal/gpio.c \
-                   hal/wdg.c 
-		   
+                   hal/wdg.c \
+                   hal/ota_port.c
+
 #$(NAME)_SOURCES  += hal/uart.c
 #$(NAME)_SOURCES  += hal/flash.c
 #$(NAME)_SOURCES  += hal/hw.c
 #$(NAME)_SOURCES  += hal/wifi_port.c
-#$(NAME)_SOURCES  += hal/ota_port.c
 #$(NAME)_SOURCES  += hal/misc.c
 
+$(NAME)_SOURCES  += hal/pwrmgmt_hal/board_cpu_pwr_rtc.c
+$(NAME)_SOURCES  += hal/pwrmgmt_hal/board_cpu_pwr_systick.c
+$(NAME)_SOURCES  += hal/pwrmgmt_hal/board_cpu_pwr.c
 
 
 #$(NAME)_COMPONENTS += platform/mcu/rtl8710bn/peripherals
 
 PING_PONG_OTA := 1
+ifeq ($(PING_PONG_OTA),1)
+AOS_IMG1_XIP1_LD_FILE += platform/mcu/rtl8710bn/script/rlx8711B-symbol-v02-img2_xip1.ld
+AOS_IMG2_XIP2_LD_FILE += platform/mcu/rtl8710bn/script/rlx8711B-symbol-v02-img2_xip2.ld
+else
+GLOBAL_LDS_FILES += platform/mcu/rtl8710bn/script/rlx8711B-symbol-v02-img2_xip1.ld
+endif

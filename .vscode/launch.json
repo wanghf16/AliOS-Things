@@ -5,7 +5,7 @@
             "name": "Debug @ Mac/Linux",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceRoot}/out/helloworld@starterkit/binary/helloworld@starterkit.elf",
+            "program": "${workspaceRoot}/out/linkkitapp@wm_w600/binary/linkkitapp@wm_w600.elf",
             "args": [],
             "stopAtEntry": true,
             "cwd": "${workspaceRoot}",
@@ -25,7 +25,7 @@
                     "text": "target remote localhost:4242"
                 },
                 {
-                    "text": "file out/helloworld@starterkit/binary/helloworld@starterkit.elf"
+                    "text": "file out/linkkitapp@wm_w600/binary/linkkitapp@wm_w600.elf"
                 },
                 {
                     "text": "break application_start"
@@ -50,7 +50,7 @@
             "name": "Debug @ Windows",
             "type": "cppdbg",
             "request": "launch",
-            "program": "D:\\work\\AliOS-Things\\out\\helloworld@starterkit\\binary\\helloworld@starterkit.elf",
+            "program": "${workspaceRoot}/out/linkkitapp@wm_w600/binary/linkkitapp@wm_w600.elf",
             "args": [],
             "stopAtEntry": true,
             "cwd": "${workspaceRoot}",
@@ -70,7 +70,7 @@
                     "text": "target remote localhost:4242"
                 },
                 {
-                    "text": "file out/helloworld@starterkit/binary/helloworld@starterkit.elf"
+                    "text": "file out/linkkitapp@wm_w600/binary/linkkitapp@wm_w600.elf"
                 },
                 {
                     "text": "break application_start"

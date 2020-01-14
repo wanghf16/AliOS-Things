@@ -7,8 +7,8 @@
  */
 MEMORY
 {
-  FLASH (rx) : ORIGIN = 0x800e000, LENGTH = 480K /*  */
-  RAM (rwx) : ORIGIN = 0x20000000, LENGTH = 0x3C000 /*  */
+  FLASH (rx) : ORIGIN = 0x8010100, LENGTH = 0x7FF00 /*  */
+  RAM (rwx) : ORIGIN = 0x20000000, LENGTH = 0x28000 /*  */
 }
 
 /* Linker script to place sections and symbol values. Should be used together
@@ -155,5 +155,5 @@ SECTIONS
 	
 	heap_len = SIZEOF(.heap);
 	
-	ASSERT(__StackTop <= 0x20028000, "error : stack address must below 0x20028000")
+	ASSERT(__HeapLimit <= 0x20028000, "error : stack address must below 0x20028000")
 }

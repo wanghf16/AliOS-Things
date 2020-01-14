@@ -54,33 +54,6 @@
  * @endcode
  *
  * \n
- * @attention 1. It is recommended that users set the timer to the periodic mode
- *               for periodic checks.
- * @attention (1). In freeRTOS timer or os_timer, do not delay by while(1) or
- *               in the manner that will block the thread.
- * @attention (2). The timer callback should not occupy CPU more than 15ms.
- * @attention (3). os_timer_t should not define a local variable, it has to be global varialbe
- *               or memory got by malloc.
- *
- * @attention 2. Functions are stored in CACHE by default, need not ICACHE_FLASH_ATTR any more.
- *                The interrupt functions can also be stored in CACHE. If users want to store some
- *                frequently called functions in RAM, please add IRAM_ATTR before functions' name.
- *
- * @attention 3. Priority of the RTOS SDK is 15. xTaskCreate is an interface of
- *               freeRTOS. For details of the freeRTOS and APIs of the system,
- *               please visit http://www.freertos.org
- * @attention (1). When using xTaskCreate to create a task, the task stack range is [176, 512].
- * @attention (2). If an array whose length is over 60 bytes is used in a task,
- *                 it is suggested that users use malloc and free rather than local
- *                 variable to allocate array. Large local variables could lead to
- *                 task stack overflow.
- * @attention (3). The RTOS SDK takes some priorities. Priority of the pp task is
- *                 13; priority of precise timer(ms) thread is 12; priority of the
- *                 TCP/IP task is 10; priority of the freeRTOS timer is 2; priority of
- *                 the idle task is 0.
- * @attention (4). Users can use tasks with priorities from 1 to 9.
- * @attention (5). Do not revise FreeRTOSConfig.h, configurations are decided by source code
- *                 inside the RTOS SDK, users can not change it.
  */
 
 #include <stdio.h>

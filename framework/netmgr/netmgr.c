@@ -314,10 +314,33 @@ static void netmgr_scan_adv_completed_event(hal_wifi_module_t *m,
     }
 }
 
+
 static void netmgr_para_chg_event(hal_wifi_module_t *m,
                                   hal_wifi_ap_info_adv_t *ap_info,
                                   char *key, int key_len, void *arg)
 {
+    int ret;
+
+    if (!ap_info) return;
+
+    LOGI("netmgr", "%s %d, bssid: %02x:%02x:%02x:%02x:%02x:%02x\r\n",
+         __func__, __LINE__,
+         (uint8_t)(ap_info->bssid[0]), (uint8_t)(ap_info->bssid[1]), (uint8_t)(ap_info->bssid[2]),
+         (uint8_t)(ap_info->bssid[3]), (uint8_t)(ap_info->bssid[4]), (uint8_t)(ap_info->bssid[5]));
+
+    /* Update bssid information here */
+    memcpy(g_netmgr_cxt.ap_config.bssid, ap_info->bssid,
+           sizeof(g_netmgr_cxt.saved_conf.bssid));
+
+    memcpy(g_netmgr_cxt.saved_conf.bssid, g_netmgr_cxt.ap_config.bssid,
+           sizeof(g_netmgr_cxt.saved_conf.bssid));
+
+    ret = aos_kv_set(NETMGR_WIFI_KEY, &g_netmgr_cxt.saved_conf,
+                     sizeof(netmgr_ap_config_t), 1);
+    if (ret != 0) {
+        LOGE("netmgr", "%s failed", __func__);
+        return;
+    }
 }
 
 static void netmgr_fatal_err_event(hal_wifi_module_t *m, void *arg)
@@ -421,6 +444,9 @@ static void handle_wifi_disconnect(void)
     }
 #endif
 }
+#ifdef AWSS_SUPPORT_STATIS
+extern void awss_update_statis(int idx, int type);
+#endif
 
 static void netmgr_events_executor(input_event_t *eventinfo, void *priv_data)
 {
@@ -459,14 +485,20 @@ static void netmgr_events_executor(input_event_t *eventinfo, void *priv_data)
         case CODE_WIFI_ON_GOT_IP:
             if (g_netmgr_cxt.doing_smartconfig) {
                 g_netmgr_cxt.doing_smartconfig = false;
+            } else {
+#ifdef AWSS_SUPPORT_STATIS
+                awss_update_statis(0, 1);
+#endif
             }
             set_wifi_ssid();
             break;
         case CODE_WIFI_CMD_RECONNECT:
             g_netmgr_cxt.disconnected_times = 0;
             g_netmgr_cxt.ip_available = false;
-            LOGD("netmgr", "reconnect wifi - %s, %s",
-                 g_netmgr_cxt.ap_config.ssid, g_netmgr_cxt.ap_config.pwd);
+            LOGD("netmgr", "reconnect wifi - %s", g_netmgr_cxt.ap_config.ssid);
+#ifdef AWSS_SUPPORT_STATIS
+            awss_update_statis(0, 0);
+#endif
             reconnect_wifi(NULL);
             break;
         default :
@@ -575,7 +607,10 @@ static void handle_netmgr_cmd(char *pwbuf, int blen, int argc, char **argv)
         if (argc != 4) {
             return;
         }
-
+#ifdef WIFI_PROVISION_ENABLED
+        extern int awss_stop(void);
+        awss_stop();
+#endif
         netmgr_ap_config_t config;
 
         strncpy(config.ssid, argv[2], sizeof(config.ssid) - 1);

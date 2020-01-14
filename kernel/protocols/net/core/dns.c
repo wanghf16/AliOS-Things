@@ -117,8 +117,10 @@ static u16_t dns_txid;
 
 /** DNS maximum number of retries when asking for a name, before "timeout". */
 #ifndef DNS_MAX_RETRIES
-#define DNS_MAX_RETRIES           4
+#define DNS_MAX_RETRIES           8
 #endif
+
+#define DNS_MAX_RETRY_INTERVAL    32  // 32 seconds
 
 /** DNS resource record max. TTL (one week as default) */
 #ifndef DNS_MAX_TTL
@@ -170,6 +172,10 @@ static u16_t dns_txid;
 #define LWIP_DNS_ADDRTYPE_ARG_OR_ZERO(x) 0
 #define LWIP_DNS_SET_ADDRTYPE(x, y)
 #endif /* LWIP_IPV4 && LWIP_IPV6 */
+
+#define lwip_in_range(c, lo, up)  ((u8_t)(c) >= (lo) && (u8_t)(c) <= (up))
+#define lwip_isupper(c)           lwip_in_range((c), 'A', 'Z')
+#define lwip_tolower(c)           (lwip_isupper(c) ? (c) - 'A' + 'a' : c)
 
 /** DNS query message structure.
     No packing needed: only used locally on the stack. */
@@ -586,10 +592,12 @@ dns_compare_name(const char *query, struct pbuf *p, u16_t start_offset)
     u16_t response_offset = start_offset;
 
     do {
-        n = pbuf_try_get_at(p, response_offset++);
-        if (n < 0) {
+        n = pbuf_try_get_at(p, response_offset);
+        if (n < 0 || response_offset == 0xFFFF) {
+            /* error or overflow */
             return 0xFFFF;
         }
+        response_offset++;
         /** @see RFC 1035 - 4.1.4. Message compression */
         if ((n & 0xc0) == 0xc0) {
             /* Compressed name: cannot be equal since we don't send them */
@@ -601,7 +609,11 @@ dns_compare_name(const char *query, struct pbuf *p, u16_t start_offset)
                 if (c < 0) {
                     return 0xFFFF;
                 }
-                if ((*query) != (u8_t)c) {
+                if (lwip_tolower((*query)) != lwip_tolower((u8_t)c)) {
+                    return 0xFFFF;
+                }
+                if (response_offset == 0xFFFF) {
+                    /* would overflow */
                     return 0xFFFF;
                 }
                 ++response_offset;
@@ -616,7 +628,11 @@ dns_compare_name(const char *query, struct pbuf *p, u16_t start_offset)
         }
     } while (n != 0);
 
-    return response_offset + 1;
+    if (response_offset == 0xFFFF) {
+        /* would overflow */
+        return 0xFFFF;
+    }
+    return (uint16_t)(response_offset + 1);
 }
 
 /**
@@ -946,7 +962,14 @@ dns_check_entry(u8_t i)
                     entry->state = DNS_STATE_UNUSED;
                     break;
                 } else {
-                    entry->tmr = 1;
+                    entry->tmr = 1 << entry->retries;
+                    /**
+                     * entry->tmr is of uint8_t type, so we handle 8 and above
+                     * left-shift operation carefully here.
+                     **/
+                    if ((entry->tmr > DNS_MAX_RETRY_INTERVAL) || (entry->retries > 7)) {
+                        entry->tmr = DNS_MAX_RETRY_INTERVAL;
+                    }
                 }
 
                 index = (entry->server_idx + 1) % num_dns;

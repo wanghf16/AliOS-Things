@@ -35,6 +35,13 @@ SECTIONS
 {
 	.rom.text : { } > ROM
 	.rom.rodata : { } > ROM
+	.ARM.exidx :
+	{
+		__exidx_start = .;
+	    *(.ARM.exidx*)
+	    *(.gnu.linkonce.armexidx.*)
+		__exidx_end = .;
+	} > ROM
 	.hal.rom.bss : { } > ROMBSS_RAM
 
 	/* image1 entry, this section should in RAM and fixed address for ROM */
@@ -113,7 +120,7 @@ SECTIONS
 		*(.bdsram.data*)
 		__bss_end__ = .;
 	} > BD_RAM
-  end =.;
+
 	.ram_heap.data : 
 	{
 		*(.bfsram.data*)
@@ -121,7 +128,7 @@ SECTIONS
 
 	. = ALIGN(8);
 	PROVIDE(heap_start    	  = .);
-	PROVIDE(heap_end    	  = 0x1003DFFF);
+	PROVIDE(heap_end    	  = 0x1003CFFF);
 	PROVIDE(heap_len    	  = heap_end - heap_start);
 	
 	.rom.bss : 

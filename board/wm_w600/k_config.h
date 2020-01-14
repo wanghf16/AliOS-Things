@@ -41,7 +41,7 @@
 #endif
 
 #ifndef RHINO_CONFIG_MM_DEBUG
-#define RHINO_CONFIG_MM_DEBUG                1
+#define RHINO_CONFIG_MM_DEBUG                0
 #endif
 #ifndef RHINO_CONFIG_MM_TLF
 #define RHINO_CONFIG_MM_TLF                  1
@@ -106,7 +106,7 @@
 #define RHINO_CONFIG_WORKQUEUE               1
 #endif
 #ifndef RHINO_CONFIG_WORKQUEUE_STACK_SIZE
-#define RHINO_CONFIG_WORKQUEUE_STACK_SIZE    768
+#define RHINO_CONFIG_WORKQUEUE_STACK_SIZE    256
 #endif
 
 /* kernel mm_region conf */
@@ -177,7 +177,7 @@
 #define RHINO_CONFIG_K_DYN_QUEUE_MSG         30
 #endif
 #ifndef RHINO_CONFIG_K_DYN_TASK_STACK
-#define RHINO_CONFIG_K_DYN_TASK_STACK        256
+#define RHINO_CONFIG_K_DYN_TASK_STACK        128
 #endif
 #ifndef RHINO_CONFIG_K_DYN_MEM_TASK_PRI
 #define RHINO_CONFIG_K_DYN_MEM_TASK_PRI      RHINO_CONFIG_USER_PRI_MAX
@@ -186,7 +186,7 @@
 
 /* kernel idle conf */
 #ifndef RHINO_CONFIG_IDLE_TASK_STACK_SIZE
-#define RHINO_CONFIG_IDLE_TASK_STACK_SIZE    200
+#define RHINO_CONFIG_IDLE_TASK_STACK_SIZE    128
 #endif
 
 /* kernel hook conf */
@@ -226,5 +226,12 @@
 #define RHINO_CONFIG_TRACE                   0
 #endif
 
+#ifndef CONFIG_AOS_CLI_STACK_SIZE
+#define CONFIG_AOS_CLI_STACK_SIZE  256
+#endif
+
+#ifndef CONFIG_W600_USE_NEW_HEAP
+#define CONFIG_W600_USE_NEW_HEAP   1
+#endif
 #endif /* CONFIG_H */
 

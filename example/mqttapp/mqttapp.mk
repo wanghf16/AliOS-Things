@@ -1,28 +1,32 @@
-
 NAME := mqttapp
+$(NAME)_SOURCES := app_entry.c 
 
-GLOBAL_DEFINES      += MQTT_TEST ALIOT_DEBUG IOTX_DEBUG USE_LPTHREAD
-CONFIG_OTA_CH = mqtt
-ifeq ($(STM32_NONSTD_SOCKET), true)
-$(NAME)_SOURCES     := mqtt-example-b_l475e.c
-$(NAME)_DEFINES     += SENSOR
+$(NAME)_COMPONENTS += framework/protocol/linkkit/sdk \
+    				framework/protocol/linkkit/hal \
+					framework/netmgr \
+					framework/common \
+					utility/cjson \
+					tools/cli  
+
+GLOBAL_CFLAGS +=  -DMQTT_DIRECT   
+
+GLOBAL_DEFINES += CONFIG_AOS_CLI
+
+ifeq ($(case),rrpc)
+$(NAME)_SOURCES += mqtt_example_rrpc.c
+else ifeq ($(case),multithread)
+$(NAME)_SOURCES += mqtt_example_multithread.c
+else ifeq ($(case),presstest)
+$(NAME)_SOURCES += mqtt_presstest.c
 else
-$(NAME)_SOURCES     := mqtt-example.c
+$(NAME)_SOURCES += mqtt_example.c
 endif
 
-#$(NAME)_COMPONENTS += connectivity.mqtt
-$(NAME)_COMPONENTS := cli  protocol.linkkit.iotkit  connectivity.mqtt cjson fota netmgr framework.common 
-
-LWIP := 0
 ifeq ($(LWIP),1)
 $(NAME)_COMPONENTS  += protocols.net
 no_with_lwip := 0
 endif
 
-ifeq ($(no_tls),1)
-GLOBAL_DEFINES += IOTX_WITHOUT_TLS  MQTT_DIRECT
-endif
-
-ifeq ($(press_test),1)
-GLOBAL_DEFINES += MQTT_PRESS_TEST
+ifneq ($(loop),0)
+$(NAME)_DEFINES      += TEST_LOOP
 endif

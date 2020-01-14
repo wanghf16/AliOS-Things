@@ -218,13 +218,22 @@ int flash_write(unsigned int addr, char *buf, unsigned int len)
 int32_t hal_flash_write(hal_partition_t in_partition, uint32_t *off_set,
                         const void *in_buf, uint32_t in_buf_len)
 {
+    int32_t ret = 0;
     hal_logic_partition_t *partition_info;
 
     uint32_t page_size = get_page_size();
     //uint32_t start_address = flash_get_start_address(&flash_obj);
     partition_info = hal_flash_get_info( in_partition );
     uint32_t start_address = partition_info->partition_start_addr + *off_set;
-    printf("hal_flash_write start address is 0x%x, offset is 0x%x %d\r\n", start_address, *off_set, in_partition);
+    uint32_t partition_end = partition_info->partition_start_addr + partition_info->partition_length;
+    if(start_address >= partition_end){
+        printf("flash over write\r\n");
+        return -1;
+    }    
+    if((start_address + in_buf_len) > partition_end){
+        in_buf_len = partition_end - start_address;
+        printf("flash over write, new len is %d\r\n", in_buf_len);
+    }
 #if 0
     uint32_t current_sector_size = flash_get_sector_size(&flash_obj, (uint32_t)off_set + start_address);
 
@@ -250,7 +259,9 @@ int32_t hal_flash_write(hal_partition_t in_partition, uint32_t *off_set,
         ((uint32_t)*off_set + in_buf_len > flash_get_size(&flash_obj))){
         return -1;
     }
-    return flash_write(start_address, (const uint8_t *)in_buf, in_buf_len);
+    ret = flash_write(start_address, (const uint8_t *)in_buf, in_buf_len);
+    *off_set += in_buf_len;
+    return ret;
 #endif
 }
 
@@ -287,8 +298,8 @@ int32_t hal_flash_read(hal_partition_t in_partition, uint32_t *off_set,
         return -1;
     }
 
-    //printf("hal_flash_read offset is 0x%x , in_buf_len %d , start_add is 0x%x\r\n",
-        //*off_set, in_buf_len, start_address);
+    *off_set += in_buf_len;
+
     return rda5981_read_flash(start_address, (const uint8_t *)out_buf, in_buf_len);
     #if 0
     //uint32_t start_address = flash_get_start_address(&flash_obj);
